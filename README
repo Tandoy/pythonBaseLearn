@@ -18,3 +18,8 @@
 12.关键词 with 语句就可以保证诸如文件之类的对象在使用完之后一定会正确的执行他的清理方法。
 13.类的方法：在类的内部，使用 def 关键字可以为类定义一个方法，与一般函数定义不同，类方法必须包含参数 self，且为第一个参数。
 14.两个下划线开头，声明该属性或者方法为私有，不能在类地外部被使用或直接访问。
+15.re.match 只匹配字符串的开始，如果字符串开始不符合正则表达式，则匹配失败，函数返回 None；而 re.search 匹配整个字符串，直到找到一个匹配。
+16.线程：  _thread && threading(推荐使用)
+          1） _thread.start_new_thread ( function, args[, kwargs] )
+          2） class myThread (threading.Thread):      对于那些需要每次只允许一个线程操作的数据，可以将其操作放到 acquire 和 release 方法之间
+          3） Python 的 Queue 模块中提供了同步的、线程安全的队列类，包括 FIFO（先入先出)队列 Queue，LIFO（后入先出）队列 LifoQueue，和优先级队列 PriorityQueue。
