@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
 
     class MyError(Exception):
-        def __int__(self, value):
+        def __init__(self, value):
             self.value = value
 
         def __str__(self):
@@ -35,3 +35,19 @@ if __name__ == '__main__':
         raise MyError(2 * 2)
     except MyError as e:
         print('My exception occurred, value:', e.value)
+
+
+    def divide(x, y):
+        try:
+            result = x / y
+        except ZeroDivisionError:
+            print("division by zero!")
+        except TypeError:
+            print("unsupported operand type(s)!")
+        else:
+            print("result is", result)
+        finally:
+            print("executing finally clause")
+
+
+    divide(2, 0)
