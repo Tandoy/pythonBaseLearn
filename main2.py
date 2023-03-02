@@ -55,10 +55,22 @@ if __name__ == '__main__':
 
     # 循环
     str = ['Mary', 'had', 'a', 'little', 'lamb']
+    str2 = ['kobe']
+    str.extend(str2)
     for i in range(len(str)):
         print(i, str[i])
 
     # 迭代器
     it = iter(str)
-    for x in it :
+    for x in it:
         print(x)
+
+    # 列表推导式
+    freshfruit = ['  banana', '  loganberry ', 'passion fruit  ']
+    print([x.strip() for x in freshfruit])
+
+    # 同时遍历两个或更多的序列，可以使用 zip() 组合
+    questions = ['name', 'quest', 'favorite color']
+    answers = ['lancelot', 'the holy grail', 'blue']
+    for q, a in zip(questions, answers):
+        print('What is your {0}?  It is {1}.'.format(q, a))
