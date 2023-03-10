@@ -28,6 +28,7 @@ def get_adjust_image(filePath, savePath):
         for file in files:  # 展现各文件
             picture_path = os.path.join(root, file)  # 得到图像的绝对路径
             pic_org = Image.open(picture_path)  # 打开图像
+            # pic_new = pic_org.crop((0,0,300,300)) #裁剪 0,0表示要裁剪的位置的左上角坐标，50,50表示右下角。
             pic_new = pic_org.resize((width, height), Image.ANTIALIAS)  # 图像尺寸修改
             _, sub_folder = os.path.split(root)  # 得到子文件夹名字
             pic_new_path = os.path.join(savePath, sub_folder)
