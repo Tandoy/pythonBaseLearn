@@ -1,5 +1,2 @@
-follow_cnt-chart_line-date
-jfjx_total_table_multihead-month
-level_down_meb-sanji-date
-lux_ol_check_room_sold-card_tbhb-date
-rd-chart_line-date
+spu_stock,库存商品spu数量
+member_spu_point,会员商品spu积分数量
