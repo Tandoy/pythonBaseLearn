@@ -4,25 +4,27 @@ from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 import os
 from PIL import Image
+from pdf2image import convert_from_path
 
 
-# 拿到某个目录下所有cpt名称
+# 拿到某个目录下所有指标名称以及中文名称
 def get_listDir_cptName():
-    data = []
-    file = open('cpt.txt', 'r')  # 打开文件
+    data = {}
+    file = open('cpt.txt', 'r', encoding='utf-8')  # 打开文件
     file_data = file.readlines()  # 读取所有行
     for row in file_data:
-        data.append(row.replace('\n', ''))  # 将每行数据插入data中
+        data[row.split(",")[0]] = row.split(",")[1].replace("\n", "")
     return data
 
 
 # 模拟点击导出图片动作
-def get_pic():
+def get_pic(exType):
+    # exType image&extype=BMP/JPG/PNG/GIF    pdf
     FR_LOGIN_ADDR = 'http://47.100.72.147:37799/webroot/decision/login'
     FR_USER = 'WeHotel_Admin'
     FR_PASSWORD = 'ceV2_y'
 
-    cpt_names = get_listDir_cptName()
+    targets = get_listDir_cptName()
 
     webdriver_options = webdriver.ChromeOptions()
 
@@ -39,9 +41,11 @@ def get_pic():
     try:
         # 循环导出图片
         index = 1
-        for CPT_NAME in cpt_names:
+        for key in targets:
+            target = key
+            target_name = targets[key]
             driver.get(
-                f'http://47.100.72.147:37799/webroot/decision/view/report?viewlet=Wehotel_PC%252Ftz%252F{CPT_NAME}.cpt&format=image&extype=JPG')
+                f'http://47.100.72.147:37799/webroot/decision/view/report?viewlet=Wehotel_PC%252Ftz%252Fmember_spu_commodities-chart_line-date.cpt&ref_t=design&ref_c=f9676866-840d-4192-a623-94547d558484&full_date_2=20230321&full_date_3=20230310&url=https://wdapig.bestwehotel.net/20221017175934&orderby=full_date asc&output=full_date as time,year_month_date as time_cn,{target} as target&dim_group=full_date&seriesname={target_name}&format={exType}&__filename__=member_spu_commodities-chart_line-date-+{target}')
             # 除了第一次之外 其它故意填错用户名和密码以免登录成功后重定向
             if index == 1:
                 driver.find_elements_by_css_selector('input[type=text]')[0].send_keys(FR_USER)
@@ -69,8 +73,8 @@ def resize_image_all(input_dir, output_dir, width=None, height=None):
         input_path = os.path.join(input_dir, file_name)
         output_path = os.path.join(output_dir, file_name)
         try:
-            # 只处理 jpg, jpeg 和 png 格式的图片
-            if input_path.endswith(('jpg', 'jpeg', 'png')):
+            # 只处理 jpg, jpeg ,bmp 和 png 格式的图片
+            if input_path.endswith(('jpg', 'jpeg', 'png', 'bmp')):
                 resize_image(input_path, output_path, width, height)
         except OSError:
             print(f"Cannot process {file_name}")
@@ -93,12 +97,28 @@ def resize_image(input_image_path, output_image_path, width, height):
         # 未指定缩放大小，则输出原图
         max_size = (w, h)
 
+    # crop = original_image.crop((0, 0, width, height))
     original_image.thumbnail(max_size, Image.ANTIALIAS)
     original_image.save(output_image_path)
 
 
+# pdf --> jpg
+def pdf_to_jpg(pdf_dir, output_dir):
+    for filename in os.listdir(pdf_dir):
+        if filename.endswith('.pdf'):
+            # 获取PDF文件的绝对路径
+            pdf_path = os.path.join(pdf_dir, filename)
+
+            # 将PDF转换为图像
+            images = convert_from_path(pdf_path, poppler_path=r'E:\poppler\poppler-0.68.0\bin')
+
+            # 将每个图像保存到输出目录
+            for i, image in enumerate(images):
+                image.save(os.path.join(output_dir, f"{os.path.splitext(filename)[0]}.jpg"), "JPEG")
+
+
 if __name__ == '__main__':
-    # 导出cpt图片
-    get_pic()
+    # 导出cpt为pdf
+    get_pic(exType='image&extype=JPG')
     # 调整图片尺寸
-    resize_image_all(r'E:\1', r'E:\2', 500, 500)
+    resize_image_all(r'E:\1', r'E:\2', 500, 300)
