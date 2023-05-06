@@ -1,20 +1,11 @@
 # This is a export pic  Python script.
 import time as time1
+import mysql.connector
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 import os
 from PIL import Image
 from pdf2image import convert_from_path
-
-
-# 拿到某个目录下所有指标名称以及中文名称
-def get_listDir_cptName():
-    data = {}
-    file = open('cpt.txt', 'r', encoding='utf-8')  # 打开文件
-    file_data = file.readlines()  # 读取所有行
-    for row in file_data:
-        data[row.split(",")[0]] = row.split(",")[1].replace("\n", "")
-    return data
 
 
 # 模拟点击导出图片动作
@@ -24,7 +15,19 @@ def get_pic(exType):
     FR_USER = 'WeHotel_Admin'
     FR_PASSWORD = 'ceV2_y'
 
-    targets = get_listDir_cptName()
+    ## 总指标数
+    CPT_NAME = 'card_dim'
+    metric_name = 'member_spu_point:spu积分数'
+    api_url = 'https://wdapig.bestwehotel.net/20221017180509'
+    time_col = 'week:year_wh_week'
+    group_by = 'year_wh_week'
+    filters = 'year_wh_week_2:202303;year_wh_week_3:202310'
+    page_size = '999'
+    page_no = '0'
+    order_by = 'year_wh_week asc '
+    company = 'wh'
+    output = 'year_wh_week as time,wh_week_001 as time_cn,platform as gp1,member_spu_point as target,hb_member_spu_point as hb'
+    target_name = 'yzzb0001'
 
     webdriver_options = webdriver.ChromeOptions()
 
@@ -40,12 +43,33 @@ def get_pic(exType):
     driver.get(FR_LOGIN_ADDR)
     try:
         # 循环导出图片
+        # 连接到MySQL数据库
+        cnx = mysql.connector.connect(user='shunan', password='S82-#1KHg',
+                                      host='172.25.62.63', database='member_bi')
+
+        # 执行SQL查询
+        query = "select * from cpt limit 1;"
+        cursor = cnx.cursor()
+        cursor.execute(query)
+
         index = 1
-        for key in targets:
-            target = key
-            target_name = targets[key]
+        for row in cursor:
             driver.get(
-                f'http://47.100.72.147:37799/webroot/decision/view/report?viewlet=Wehotel_PC%252Ftz%252Fmember_spu_commodities-chart_line-date.cpt&ref_t=design&ref_c=f9676866-840d-4192-a623-94547d558484&full_date_2=20230321&full_date_3=20230310&url=https://wdapig.bestwehotel.net/20221017175934&orderby=full_date asc&output=full_date as time,year_month_date as time_cn,{target} as target&dim_group=full_date&seriesname={target_name}&format={exType}&__filename__=member_spu_commodities-chart_line-date-+{target}')
+                f'http://47.100.72.147:37799/webroot/decision/view/report?ref_c=79156ee5-2918-4a7c-a85e-e112a35c7517&viewlet=Wehotel_PC%252Ftz%252Fprod-new%252F'
+                f'{CPT_NAME}.cpt'
+                f'&ref_t=design'
+                f'&metric_name={metric_name}'
+                f'&api_url={api_url}'
+                f'&time_col={time_col}'
+                f'&group_by={group_by}'
+                f'&filters={filters}'
+                f'&page_size={page_size}'
+                f'&page_no={page_no}'
+                f'&order_by={order_by}'
+                f'&company={company}'
+                f'&output={output}'
+                f'&format=image&extype=JPG'
+                f'&__filename__={CPT_NAME}+{target_name}')
             # 除了第一次之外 其它故意填错用户名和密码以免登录成功后重定向
             if index == 1:
                 driver.find_elements_by_css_selector('input[type=text]')[0].send_keys(FR_USER)
@@ -121,4 +145,4 @@ if __name__ == '__main__':
     # 导出cpt为pdf
     get_pic(exType='image&extype=JPG')
     # 调整图片尺寸
-    resize_image_all(r'E:\1', r'E:\2', 500, 300)
+    # resize_image_all(r'E:\1', r'E:\2', 500, 300)
