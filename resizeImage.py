@@ -48,7 +48,31 @@ def get_pic(exType):
                                       host='172.25.62.63', database='member_bi')
 
         # 执行SQL查询
-        query = "select * from cpt limit 1;"
+        query = '''
+        select  distinct
+SUBSTRING_INDEX(file_name,'.',1) as CPT_NAME 
+,CONCAT(t3.english_name ,":",t3.name) as metric_name
+,mai.url as url
+,case when t1.dim_group is not null then concat(t1.dim_group,",",'full_date') else 'full_date' end as group_by
+,case when t5.`type` = 'static' then concat(CONCAT(t5.param_name,":",t5.param_value),";","full_date_2:20230509",";","full_date_3:20230509") else concat("full_date_2:20230509",";","full_date_3:20230509") end as filters
+,'full_date asc' as order_by
+from cpt t1
+left join metric_cpt t2
+on t2.cpt_id = t2.cpt_id 
+left join meta_business_metric t3
+on t3.metric_id = t2.metric_id 
+left join meta_tech_metric mtm 
+on mtm.metric_id = t3.metric_id
+and time_type = 'DATE'
+left join meta_relation_tech_metric_api t4
+on t4.tech_id = mtm.tech_id 
+left join meta_api_info mai 
+on mai.id = t4.api_id
+left join cpt_param t5
+on t5.cpt_id = t1.cpt_id
+where mai.url is not null
+and t5.`type` = 'static';
+        '''
         cursor = cnx.cursor()
         cursor.execute(query)
 
@@ -56,9 +80,9 @@ def get_pic(exType):
         for row in cursor:
             driver.get(
                 f'http://47.100.72.147:37799/webroot/decision/view/report?ref_c=79156ee5-2918-4a7c-a85e-e112a35c7517&viewlet=Wehotel_PC%252Ftz%252Fprod-new%252F'
-                f'{CPT_NAME}.cpt'
+                f'{CPT_NAME}.cpt' # cpt --> file_name
                 f'&ref_t=design'
-                f'&metric_name={metric_name}'
+                f'&metric_name={metric_name}' # meta_business_metric --> name
                 f'&api_url={api_url}'
                 f'&time_col={time_col}'
                 f'&group_by={group_by}'
