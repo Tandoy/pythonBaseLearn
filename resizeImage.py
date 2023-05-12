@@ -56,9 +56,12 @@ SUBSTRING_INDEX(file_name,'.',1) as CPT_NAME
 ,case when t1.dim_group is not null then concat(t1.dim_group,",",'full_date') else 'full_date' end as group_by
 ,case when t5.`type` = 'static' then concat(CONCAT(t5.param_name,":",t5.param_value),";","full_date_2:20230509",";","full_date_3:20230509") else concat("full_date_2:20230509",";","full_date_3:20230509") end as filters
 ,'full_date asc' as order_by
+,case when t1.dim_group is not null then concat('full_date as time,year_month_date as time_cn,',concat(t1.dim_group,' as gp1,'),concat(t3.english_name,' as target'))
+else concat('full_date as time,year_month_date as time_cn,',concat(t3.english_name,' as target')) end as output
+,t1.cpt_id as CPT_NAME
 from cpt t1
 left join metric_cpt t2
-on t2.cpt_id = t2.cpt_id 
+on t1.cpt_id = t2.cpt_id 
 left join meta_business_metric t3
 on t3.metric_id = t2.metric_id 
 left join meta_tech_metric mtm 
@@ -70,8 +73,7 @@ left join meta_api_info mai
 on mai.id = t4.api_id
 left join cpt_param t5
 on t5.cpt_id = t1.cpt_id
-where mai.url is not null
-and t5.`type` = 'static';
+where mai.url is not null order by t1.cpt_id;
         '''
         cursor = cnx.cursor()
         cursor.execute(query)
